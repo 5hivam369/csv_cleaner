@@ -1,27 +1,81 @@
 print("CSV Cleaner backend satrting")
-import analyser
-import cleaner as cln
+from analyser import analyse_csv
+# import cleaner as cln
+from fastapi import FastAPI,UploadFile, File
+import tempfile
+
 file_path="C:\Codes\csv_cleaner\data\machine-readable-business-employment-data-mar-2026-quarter.csv"
-res=analyser.analyse_csv(file_path)
+res=analyse_csv(file_path)
 print(res)
 
 output_file = "C:\Codes\csv_cleaner\data\clean.csv"
 # Load CSV
-df = cln.load_csv(file_path)
+# df = cln.load_csv(file_path)
     
-print("\nOriginal Data:")
-print(df)
+# print("\nOriginal Data:")
+# print(df)
     
-# Clean data
-cleaned_df = cln.clean_data(df)
+# # Clean data
+# cleaned_df = cln.clean_data(df)
     
-print("\nCleaned Data:")
-print(cleaned_df)
+# print("\nCleaned Data:")
+# print(cleaned_df)
     
-    # Save cleaned CSV
-cleaned_df.to_csv(output_file, index=False)
+#     # Save cleaned CSV
+# cleaned_df.to_csv(output_file, index=False)
     
-print(f"\nCleaned file saved to: {output_file}")
+# print(f"\nCleaned file saved to: {output_file}")
 
-print("\nSummary:")
-print(cln.get_cleaning_summary(df, cleaned_df))
+# print("\nSummary:")
+# print(cln.get_cleaning_summary(df, cleaned_df))
+
+
+
+app = FastAPI()
+
+
+@app.get("/")
+def home():
+    return {
+        "message": "CSV Cleaner API is running"
+    }
+
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy"
+    }
+
+
+@app.post("/analyze")
+async def analyze(file: UploadFile = File(...)):
+
+    if not file.filename.endswith(".csv"):
+        return {
+            "error": "Only CSV files are allowed"
+        }
+
+    contents = await file.read()
+
+    with tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".csv"
+    ) as temp_file:
+
+        temp_file.write(contents)
+        temp_file_path = temp_file.name
+
+    result = analyze_csv(temp_file_path)
+
+    return result
+
+@app.post("/file-info")
+async def file_info(file: UploadFile = File(...)):
+
+    contents = await file.read()
+
+    return {
+        "filename": file.filename,
+        "size": len(contents),
+        "is_csv":file.filename.endswith(".csv")
+    }
