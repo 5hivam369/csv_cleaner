@@ -22,3 +22,6 @@ print(cleaned_df)
 cleaned_df.to_csv(output_file, index=False)
     
 print(f"\nCleaned file saved to: {output_file}")
+
+print("\nSummary:")
+print(cln.get_cleaning_summary(df, cleaned_df))

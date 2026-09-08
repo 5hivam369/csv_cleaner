@@ -53,9 +53,19 @@ def handle_missing_values(df):
 
 def clean_data(df):
     """Run the complete cleaning pipeline."""
-    
+    df=df.copy()
     df = clean_column_names(df)
     df = remove_duplicates(df)
     df = handle_missing_values(df)
     
     return df
+
+def get_cleaning_summary(original_df, cleaned_df):
+    
+    return{
+        'Original rows':len(original_df),
+        'Cleaned rows':len(cleaned_df),
+        'Duplicates removed':(len(original_df)-len(cleaned_df)),
+        'Missing Values':f"{original_df.isna().sum().sum()} -> {cleaned_df.isna().sum().sum()}"
+        }
+    
