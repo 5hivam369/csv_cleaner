@@ -1,6 +1,6 @@
 import pandas as pd
 
-def analyse_csv(file_path):
+def analyze_csv(file_path):
     """Aalyses and give a describtion of the given csv file"""
     df = pd.read_csv(file_path)
     analysis= {

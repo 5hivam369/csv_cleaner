@@ -1,14 +1,15 @@
 print("CSV Cleaner backend satrting")
-from analyser import analyse_csv
+from analyser import analyze_csv
 # import cleaner as cln
 from fastapi import FastAPI,UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 import tempfile
 
-file_path="C:\Codes\csv_cleaner\data\machine-readable-business-employment-data-mar-2026-quarter.csv"
-res=analyse_csv(file_path)
-print(res)
+# file_path="C:\Codes\csv_cleaner\data\machine-readable-business-employment-data-mar-2026-quarter.csv"
+# res=analyse_csv(file_path)
+# print(res)
 
-output_file = "C:\Codes\csv_cleaner\data\clean.csv"
+# output_file = "C:\Codes\csv_cleaner\data\clean.csv"
 # Load CSV
 # df = cln.load_csv(file_path)
     
@@ -33,6 +34,13 @@ output_file = "C:\Codes\csv_cleaner\data\clean.csv"
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def home():
@@ -67,7 +75,10 @@ async def analyze(file: UploadFile = File(...)):
 
     result = analyze_csv(temp_file_path)
 
-    return result
+    return {
+      "filename":file.filename, 
+        **result
+    }
 
 @app.post("/file-info")
 async def file_info(file: UploadFile = File(...)):
