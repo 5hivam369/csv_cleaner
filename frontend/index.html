@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Cleaner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>CSV Cleaner</h1>
+        <p>Analyze your CSV file</p>
+        <p>Upload a CSV file to analyze your dataset.</p>
+        <input type="file" id="csvfile" accept=".csv">
+        <button id="analyzebtn">Analyze CSV</button>
+    </div>
+
+    <p id="status"></p>
+
+    <div class="card" id="results">
+        <div>
+            <h3>File Name</h3>
+            <p id="filename">-</p>
+        </div>
+        <div>
+            <h3>Rows</h3>
+            <p id="rows">-</p>
+        </div>
+        <div>
+            <h3>Columns</h3>
+            <p id="columns">-</p>
+        </div>
+        <div>
+            <h3>Missing Values</h3>
+            <p id="missing">-</p>
+        </div>
+        <div>
+            <h3>Duplicate Rows</h3>
+            <p id="duplicates">-</p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
