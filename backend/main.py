@@ -3,7 +3,11 @@ from analyser import analyze_csv
 # import cleaner as cln
 from fastapi import FastAPI,UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 import tempfile
+import pandas as pd
+from cleaner import clean_data, get_cleaning_summary
+import os
 
 # file_path="C:\Codes\csv_cleaner\data\machine-readable-business-employment-data-mar-2026-quarter.csv"
 # res=analyse_csv(file_path)
@@ -90,3 +94,47 @@ async def file_info(file: UploadFile = File(...)):
         "size": len(contents),
         "is_csv":file.filename.endswith(".csv")
     }
+    
+@app.post("/clean")
+async def clean(file: UploadFile=File(...)):
+    
+    if not file.filename.endswith(".csv"):
+        return {
+            "erorr":"Only CSV file are allowed"
+        }
+    contents =await file.read()
+    
+    with tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".csv"
+    ) as temp_file:
+        temp_file.write(contents)
+        input_path=temp_file.name
+        
+    original_df=pd.read_csv(input_path)
+    cleaned_df=clean_data(original_df)
+    
+    summary=get_cleaning_summary(original_df,cleaned_df)
+    
+    output_path=tempfile.NamedTemporaryFile(delete=False,suffix="cleaned.csv").name
+    
+    cleaned_df.to_csv(output_path,index=False)
+    
+    return{
+        "filename":file.filename,
+        "summary":summary,
+        "download_path":output_path
+    }
+    
+@app.get("/download")
+
+def download_file(path: str):
+    if not os.path.exists(path):
+        return{
+            "error":"File not found"
+        }
+    return FileResponse(
+        path,
+        media_type="text/csv",
+        filename="cleaned.csv"
+    )

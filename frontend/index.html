@@ -15,6 +15,7 @@
         <p>Upload a CSV file to analyze your dataset.</p>
         <input type="file" id="csvfile" accept=".csv">
         <button id="analyzebtn">Analyze CSV</button>
+        <button id="cleanBtn">Clean CSV</button>
     </div>
 
     <p id="status"></p>
@@ -41,6 +42,33 @@
             <p id="duplicates">-</p>
         </div>
     </div>
+
+    <div class="result" id="cleanSummary">
+
+        <div >
+            <h3>Original Rows</h3>
+            <p id="originalRows">-</p>
+        </div>
+
+        <div >
+            <h3>Cleaned Rows</h3>
+            <p id="cleanedRows">-</p>
+        </div>
+
+        <div >
+            <h3>Duplicates Removed</h3>
+            <p id="duplicatesRemoved">-</p>
+        </div>
+
+        <div>
+            <h3>Missing values</h3>
+            <p id="missingChanged">-</p>
+        </div>
+
+    </div>
+
+    <a id="downloadBtn"  href="#">Download Cleaned CSV</a>
+    
     <script src="script.js"></script>
 </body>
 
