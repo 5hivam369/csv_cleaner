@@ -1,39 +1,13 @@
 print("CSV Cleaner backend satrting")
 from analyser import analyze_csv
 # import cleaner as cln
-from fastapi import FastAPI,UploadFile, File
+from fastapi import FastAPI,UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import tempfile
 import pandas as pd
-from cleaner import clean_data, get_cleaning_summary
+from cleaner import clean_data, get_cleaning_summary, get_before_after_report
 import os
-
-# file_path="C:\Codes\csv_cleaner\data\machine-readable-business-employment-data-mar-2026-quarter.csv"
-# res=analyse_csv(file_path)
-# print(res)
-
-# output_file = "C:\Codes\csv_cleaner\data\clean.csv"
-# Load CSV
-# df = cln.load_csv(file_path)
-    
-# print("\nOriginal Data:")
-# print(df)
-    
-# # Clean data
-# cleaned_df = cln.clean_data(df)
-    
-# print("\nCleaned Data:")
-# print(cleaned_df)
-    
-#     # Save cleaned CSV
-# cleaned_df.to_csv(output_file, index=False)
-    
-# print(f"\nCleaned file saved to: {output_file}")
-
-# print("\nSummary:")
-# print(cln.get_cleaning_summary(df, cleaned_df))
-
 
 
 app = FastAPI()
@@ -96,35 +70,76 @@ async def file_info(file: UploadFile = File(...)):
     }
     
 @app.post("/clean")
-async def clean(file: UploadFile=File(...)):
-    
-    if not file.filename.endswith(".csv"):
+async def clean(
+    file: UploadFile = File(...),
+    numeric_strategy: str = Form("median"),
+    text_strategy: str = Form("unknown"),
+    remove_duplicate_rows: bool = Form(True)
+):
+    if not file.filename.lower().endswith(".csv"):
+        return {"error": "Only CSV files are allowed"}
+
+    contents = await file.read()
+
+    input_path = None
+    output_path = None
+
+    try:
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix=".csv"
+        ) as temp_file:
+            temp_file.write(contents)
+            input_path = temp_file.name
+
+        original_df = pd.read_csv(input_path)
+
+        cleaned_df = clean_data(
+            original_df,
+            numeric_strategy=numeric_strategy,
+            text_strategy=text_strategy,
+            remove_duplicate_rows=remove_duplicate_rows
+        )
+
+        summary = get_before_after_report(
+            original_df,
+            cleaned_df
+        )
+
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix="_cleaned.csv"
+        ) as temp_output:
+            output_path = temp_output.name
+
+        cleaned_df.to_csv(output_path, index=False)
+
         return {
-            "erorr":"Only CSV file are allowed"
+            "filename": file.filename,
+            "summary": summary,
+            "download_path": output_path,
+            "settings": {
+                "numeric_strategy": numeric_strategy,
+                "text_strategy": text_strategy,
+                "remove_duplicate_rows": remove_duplicate_rows
+            }
         }
-    contents =await file.read()
-    
-    with tempfile.NamedTemporaryFile(
-        delete=False,
-        suffix=".csv"
-    ) as temp_file:
-        temp_file.write(contents)
-        input_path=temp_file.name
-        
-    original_df=pd.read_csv(input_path)
-    cleaned_df=clean_data(original_df)
-    
-    summary=get_cleaning_summary(original_df,cleaned_df)
-    
-    output_path=tempfile.NamedTemporaryFile(delete=False,suffix="cleaned.csv").name
-    
-    cleaned_df.to_csv(output_path,index=False)
-    
-    return{
-        "filename":file.filename,
-        "summary":summary,
-        "download_path":output_path
-    }
+
+    except ValueError as exc:
+        if output_path and os.path.exists(output_path):
+            os.remove(output_path)
+
+        return {"error": str(exc)}
+
+    except Exception:
+        if output_path and os.path.exists(output_path):
+            os.remove(output_path)
+
+        raise
+
+    finally:
+        if input_path and os.path.exists(input_path):
+            os.remove(input_path)
     
 @app.get("/download")
 
