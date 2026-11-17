@@ -1,5 +1,5 @@
 const fileInput = document.getElementById("csvfile");
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "https://csv-cleaner-backend.vercel.app";
 console.log("File input:", fileInput);
 console.log("Selected files:", fileInput?.files);
 
