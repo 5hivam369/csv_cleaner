@@ -8,6 +8,7 @@ import tempfile
 import pandas as pd
 from cleaner import clean_data, get_cleaning_summary, get_before_after_report
 import os
+import json
 
 
 app = FastAPI()
@@ -105,6 +106,27 @@ async def clean(
             original_df,
             cleaned_df
         )
+        
+        settings={
+            "numeric_strategy":numeric_strategy,
+            "text_strategy":text_strategy,
+            "remove_duplicate_rows":remove_duplicate_rows
+        }
+        
+        report={
+            "filename":file.filename,
+            "summary":summary,
+            "settings":settings
+        }
+        
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            delete=False,
+            suffix="_quality_report.json",
+            encoding="utf-8"
+        )as report_file:
+            json.dump(report,report_file,indent=4)
+            report_path=report_file.name
 
         with tempfile.NamedTemporaryFile(
             delete=False,
@@ -118,11 +140,8 @@ async def clean(
             "filename": file.filename,
             "summary": summary,
             "download_path": output_path,
-            "settings": {
-                "numeric_strategy": numeric_strategy,
-                "text_strategy": text_strategy,
-                "remove_duplicate_rows": remove_duplicate_rows
-            }
+            "report_path":report_path,
+            "settings": settings
         }
 
     except ValueError as exc:
@@ -152,4 +171,15 @@ def download_file(path: str):
         path,
         media_type="text/csv",
         filename="cleaned.csv"
+    )
+
+@app.get("/download_report")
+def download_report(path: str):
+    if not os.path.exists(path):
+        return{"error":"Report file not found"}
+    
+    return FileResponse(
+        path,
+        media_type="application/json",
+        filename="data_quality_report.json"
     )
