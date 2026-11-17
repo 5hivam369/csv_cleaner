@@ -1,7 +1,7 @@
 print("CSV Cleaner backend satrting")
 from analyser import analyze_csv
 # import cleaner as cln
-from fastapi import FastAPI,UploadFile, File, Form
+from fastapi import FastAPI,UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import tempfile
@@ -10,6 +10,30 @@ from cleaner import clean_data, get_cleaning_summary, get_before_after_report
 import os
 import json
 
+def validate_csv_file(file:UploadFile):
+    #checks filename
+    if not file.filename:
+        raise HTTPException(
+            status_code=400,
+            detail="No file selected."
+        )
+    
+    #check file extenstion
+    if not file.filename.lower().endswith(".csv"):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid file format. Please upload a CSV file."
+        )
+    
+    # Check whether file is empty
+    content = file.file.read()
+    file.file.seek(0)
+
+    if not content or not content.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="The uploaded CSV file is empty."
+        )  
 
 app = FastAPI()
 
@@ -20,6 +44,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.post("/preview")
+async def preview_csv(file: UploadFile=File(...)):
+    
+    #validate uploaded CSV
+    validate_csv_file(file)
+    
+    #read only the first 10 rows
+    df =pd.read_csv(file.file, nrows=10)
+    
+    #convert data into JSON-friendly format
+    preview_data=json.loads(
+        df.to_json(orient="records")
+    )
+    
+    return{
+        "columns": df.columns.tolist(),
+        "rows": preview_data,
+        "preview_count": len(preview_data)
+    }
 
 @app.get("/")
 def home():
@@ -36,7 +80,8 @@ def health():
 
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
-
+    validate_csv_file(file)
+    
     if not file.filename.endswith(".csv"):
         return {
             "error": "Only CSV files are allowed"
@@ -77,6 +122,8 @@ async def clean(
     text_strategy: str = Form("unknown"),
     remove_duplicate_rows: bool = Form(True)
 ):
+    validate_csv_file(file)
+    
     if not file.filename.lower().endswith(".csv"):
         return {"error": "Only CSV files are allowed"}
 
