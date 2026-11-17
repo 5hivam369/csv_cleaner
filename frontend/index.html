@@ -13,12 +13,39 @@
         <h1>CSV Cleaner</h1>
         <p>Analyze your CSV file</p>
         <p>Upload a CSV file to analyze your dataset.</p>
-        <input type="file" id="csvfile" accept=".csv">
-        <button id="analyzebtn">Analyze CSV</button>
-        <button id="cleanBtn">Clean CSV</button>
-    </div>
 
-    <p id="status"></p>
+        <div class="upload-box" id="uploadBox">
+            <dic class="upload-icon">icon</dic>
+            <h3>Drop your file here</h3>
+            <p>or click to upload</p>
+            <input type="file" id="csvfile" accept=".csv" hidden>
+            <p id="selectedFile">No file selected</p>
+        </div>
+
+        <div class="preview_section">
+            <h2>CSV Data Preview</h2>
+            <button id="previewBtn">Preview CSV</button>
+
+            <p class="status" id="preview_status" ></p>
+
+            <p id="previewInfo">
+                Upload a CSV file to preview its content
+            </p>
+            <div class="table_wrapper">
+                <table id="previewTable">
+                    <thead id="previewTableHead"></thead>
+                    <tbody id="previewTableBody">
+                        <tr>
+                            <td>Preview will appear here.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <button id="analyzebtn">Analyze CSV</button>
+
+    <p class="status" id="analyse_status" ></p>
 
     <div class="card" id="results">
         <div>
@@ -41,21 +68,98 @@
             <h3>Duplicate Rows</h3>
             <p id="duplicates">-</p>
         </div>
+        <div>
+            <h3>Dataset Quality</h3>
+            <p id="qualityScore">-</p>
+            <span>/ 100</span>
+        </div>
+
+        <div>
+            <h3>Missing cell percent</h3>
+            <p id="missingPercentage">-</p>
+        </div>
+
+        <div>
+            <h3>Duplicate rows percrnt</h3>
+            <p id="duplicatePercentage">-</p>
+        </div>
     </div>
 
-    <div class="result" id="cleanSummary">
+    <div class="column-section">
+        <h2>Column Information</h2>
+        <p>Explore the columns and data types in your dataset.</p>
 
-        <div >
+        <div class="table-wrapper">
+            <table id="" columnTable>
+                <thead>
+                    <tr>
+                        <th>Column Name</th>
+                        <th>Data Type</th>
+                    </tr>
+                </thead>
+                <tbody id="columnTableBody">
+                    <tr>
+                        <td colspan="2">Upload and analyse a CSV file.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="chart-section">
+        <h2>Missing Values by Column</h2>
+        <p>See which column need the most attention.</p>
+
+        <div class="chart-container">
+            <canvas id="missingChart"></canvas>
+        </div>
+    </div>
+
+    <div class="cleaning-settings">
+            <h2>Cleaning Settings</h2>
+            <p>Choose how missing values and duplicates should be handled.</p>
+
+            <label for="numericStrategy">
+                Numerical missing values
+            </label>
+            <select id="numericStrategy">
+                <option value="median" selected>Fill with median</option>
+                <option value="mean">Fill with mean</option>
+                <option value="zero">Fill with zero</option>
+                <option value="drop">Drop rows with missing numerical values</option>
+            </select>
+
+            <label for="textStrategy">
+                Text missing values
+            </label>
+            <select id="textStrategy">
+                <option value="unknown" selected>Fill with "Unknown"</option>
+                <option value="mode">Fill with most common value</option>
+                <option value="drop">Drop rows with missing text values</option>
+            </select>
+
+            <label class="duplicate-option">
+                <input type="checkbox" id="removeDuplicates" checked>
+                Remove duplicate rows
+            </label>
+        </div>
+
+        <button id="cleanBtn">Clean CSV</button>
+        <p class="status" id="clean_status" ></p>
+
+        <div class="result" id="cleanSummary">
+
+        <div>
             <h3>Original Rows</h3>
             <p id="originalRows">-</p>
         </div>
 
-        <div >
+        <div>
             <h3>Cleaned Rows</h3>
             <p id="cleanedRows">-</p>
         </div>
 
-        <div >
+        <div>
             <h3>Duplicates Removed</h3>
             <p id="duplicatesRemoved">-</p>
         </div>
@@ -64,11 +168,24 @@
             <h3>Missing values</h3>
             <p id="missingChanged">-</p>
         </div>
-
+        <div>
+            <h3>Column names changed</h3>
+            <p id="columnNamesChanged">-</p>
+        </div>
     </div>
 
-    <a id="downloadBtn"  href="#">Download Cleaned CSV</a>
-    
+        <div class="applied-settings">
+            <h3>Cleaning Settings Applied</h3>
+            <p id="appliedNumericStrategy">Numerical values: -</p>
+            <p id="appliedTextStrategy">Text values: -</p>
+            <p id="appliedDuplicateSetting">Duplicate removal: -</p>
+        </div>
+    </div>
+
+    <a id="downloadBtn" href="#">Download Cleaned CSV</a>
+    <a id="downloadReportBtn" href="#">Download Quality Report</a>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 </body>
 
