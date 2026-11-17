@@ -43,7 +43,7 @@ const removeDuplicatesElement = document.getElementById("removeDuplicates");
 const appliedNumericStrategy = document.getElementById("appliedNumericStrategy");
 const appliedTextStrategy = document.getElementById("appliedTextStrategy");
 const appliedDuplicateSetting = document.getElementById("appliedDuplicateSetting");
-const downloadreportbtn= document.getElementById("downloadReportBtn");
+const downloadreportbtn = document.getElementById("downloadReportBtn");
 
 const previewButton = document.getElementById("previewBtn");
 const previewInfo = document.getElementById("previewInfo");
@@ -72,8 +72,8 @@ async function analyzeCSV() {
     );
 
     const data = await response.json();
-    if(!response.ok){
-        analyse_statusText.textContent= data.detail || "Something went wrong.";
+    if (!response.ok) {
+        analyse_statusText.textContent = data.detail || "Something went wrong.";
         return;
     }
     console.log(data);
@@ -154,22 +154,22 @@ async function analyzeCSV() {
     analyse_statusText.textContent = "Analysis complete!";
 }
 
-previewButton.addEventListener("click",previewCSV);
+previewButton.addEventListener("click", previewCSV);
 
-async function previewCSV(){
+async function previewCSV() {
     const file = fileInput?.files?.[0];
-    
-    if(!file){
-        preview_statusText.textContent="Please select a CSV file.";
+
+    if (!file) {
+        preview_statusText.textContent = "Please select a CSV file.";
         return;
     }
 
-    preview_statusText.textContent="Loading Preview...";
+    preview_statusText.textContent = "Loading Preview...";
 
-    const formData=new FormData();
-    formData.append("file",file);
+    const formData = new FormData();
+    formData.append("file", file);
 
-    try{
+    try {
 
         const response = await fetch(
             `${API_BASE_URL}/preview`,
@@ -231,7 +231,7 @@ async function previewCSV(){
 
         console.error(error);
     }
-    
+
 }
 
 cleanButton.addEventListener("click", cleanCSV);
@@ -274,8 +274,8 @@ async function cleanCSV() {
     );
 
     const data = await response.json();
-    if(!response.ok){
-        clean_statusText.textContent= data.detail || "Something went wrong.";
+    if (!response.ok) {
+        clean_statusText.textContent = data.detail || "Something went wrong.";
         return;
     }
     console.log(data);
@@ -321,10 +321,29 @@ async function cleanCSV() {
 
     clean_statusText.textContent = "Cleaning complete!";
 
-    downloadButton.href =`${API_BASE_URL}/download?path=${encodeURIComponent(data.download_path)}`;
+    // Create downloadable CSV file
+    const csvBlob = new Blob(
+        [data.cleaned_csv],
+        { type: "text/csv;charset=utf-8;" }
+    );
+
+    const csvURL = URL.createObjectURL(csvBlob);
+
+    downloadButton.href = csvURL;
+    downloadButton.download = "cleaned.csv";
     downloadButton.style.display = "inline-block";
 
-    downloadreportbtn.href =`${API_BASE_URL}/download_report?path=${encodeURIComponent(data.report_path)}`;
+
+    // Create downloadable JSON quality report
+    const reportBlob = new Blob(
+        [JSON.stringify(data.quality_report, null, 4)],
+        { type: "application/json" }
+    );
+
+    const reportURL = URL.createObjectURL(reportBlob);
+
+    downloadreportbtn.href = reportURL;
+    downloadreportbtn.download = "data_quality_report.json";
     downloadreportbtn.style.display = "inline-block";
 
 }

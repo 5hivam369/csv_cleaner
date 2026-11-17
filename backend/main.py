@@ -115,6 +115,7 @@ async def file_info(file: UploadFile = File(...)):
         "is_csv":file.filename.endswith(".csv")
     }
     
+
 @app.post("/clean")
 async def clean(
     file: UploadFile = File(...),
@@ -123,16 +124,16 @@ async def clean(
     remove_duplicate_rows: bool = Form(True)
 ):
     validate_csv_file(file)
-    
+
     if not file.filename.lower().endswith(".csv"):
         return {"error": "Only CSV files are allowed"}
 
     contents = await file.read()
 
     input_path = None
-    output_path = None
 
     try:
+        # Create temporary input file
         with tempfile.NamedTemporaryFile(
             delete=False,
             suffix=".csv"
@@ -140,8 +141,10 @@ async def clean(
             temp_file.write(contents)
             input_path = temp_file.name
 
+        # Read original CSV
         original_df = pd.read_csv(input_path)
 
+        # Clean CSV using selected settings
         cleaned_df = clean_data(
             original_df,
             numeric_strategy=numeric_strategy,
@@ -149,63 +152,44 @@ async def clean(
             remove_duplicate_rows=remove_duplicate_rows
         )
 
+        # Generate before-and-after summary
         summary = get_before_after_report(
             original_df,
             cleaned_df
         )
-        
-        settings={
-            "numeric_strategy":numeric_strategy,
-            "text_strategy":text_strategy,
-            "remove_duplicate_rows":remove_duplicate_rows
-        }
-        
-        report={
-            "filename":file.filename,
-            "summary":summary,
-            "settings":settings
-        }
-        
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            delete=False,
-            suffix="_quality_report.json",
-            encoding="utf-8"
-        )as report_file:
-            json.dump(report,report_file,indent=4)
-            report_path=report_file.name
 
-        with tempfile.NamedTemporaryFile(
-            delete=False,
-            suffix="_cleaned.csv"
-        ) as temp_output:
-            output_path = temp_output.name
+        # Record cleaning settings
+        settings = {
+            "numeric_strategy": numeric_strategy,
+            "text_strategy": text_strategy,
+            "remove_duplicate_rows": remove_duplicate_rows
+        }
 
-        cleaned_df.to_csv(output_path, index=False)
+        # Generate quality report
+        report = {
+            "filename": file.filename,
+            "summary": summary,
+            "settings": settings
+        }
+
+        # Convert cleaned DataFrame directly into CSV text
+        cleaned_csv = cleaned_df.to_csv(index=False)
 
         return {
             "filename": file.filename,
             "summary": summary,
-            "download_path": output_path,
-            "report_path":report_path,
-            "settings": settings
+            "settings": settings,
+            "cleaned_csv": cleaned_csv,
+            "quality_report": report
         }
 
     except ValueError as exc:
-        if output_path and os.path.exists(output_path):
-            os.remove(output_path)
-
         return {"error": str(exc)}
-
-    except Exception:
-        if output_path and os.path.exists(output_path):
-            os.remove(output_path)
-
-        raise
 
     finally:
         if input_path and os.path.exists(input_path):
             os.remove(input_path)
+
     
 @app.get("/download")
 
