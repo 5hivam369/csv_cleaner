@@ -16,7 +16,7 @@ CSV Cleaner helps analyze messy CSV files, identify data quality, clean datasets
 - Download cleaned CSV files.
 - Responsive UI.
 ## Tech Stack
-- # Frontend
+- ### Frontend
 - HTML5
 - CSS3
 - Javascript
