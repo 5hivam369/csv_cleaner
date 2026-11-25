@@ -1,5 +1,5 @@
 # csv_cleaner
-A web based csv cleaning and analysis tool built with FastAPI, Pyhton, HTML, CSS and Javascript.
+A web based csv cleaning and analysis tool built with **FastAPI, Pyhton, HTML, CSS and Javascript**.
 
 CSV Cleaner helps analyze messy CSV files, identify data quality, clean datasets and download the clean file along with quality report.
 
@@ -56,10 +56,6 @@ pip install -r requirements.txt
 
 uvicorn main:app --reload
 
-The backend will run at:
-
-http://127.0.0.1:8000
-
 ### 5. Open the frontend
 
 Open frontend/index.html in your browser.
@@ -68,19 +64,16 @@ Make sure the frontend API configuration points to your local backend.
 
 ## Project Structure
 csv_cleaner/
-|
-|- backend/
-|  |- main.py
-|  |- analyser.py
-|  |- cleaner.py
-|  |- requirement.txt
-|   
-|- frontend/
-|  |- index.html
-|  |- style.css
-|  |- script.js
-|
-|- README.md
+  backend/
+  main.py
+  analyser.py
+  cleaner.py
+  requirement.txt
+frontend/
+  index.html
+  style.css
+  script.js
+README.md
 
 ## What I Learned
 
