@@ -63,17 +63,17 @@ Open frontend/index.html in your browser.
 Make sure the frontend API configuration points to your local backend.
 
 ## Project Structure
-csv_cleaner/
-  backend/
-  main.py
-  analyser.py
-  cleaner.py
-  requirement.txt
-frontend/
-  index.html
-  style.css
-  script.js
-README.md
+csv_cleaner/  
+  - backend/  
+    - main.py  
+    - analyser.py  
+    - cleaner.py  
+    - requirement.txt  
+  - frontend/  
+    - index.html  
+    - style.css  
+    - script.js  
+  - README.md  
 
 ## What I Learned
 
